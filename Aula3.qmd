@@ -9,7 +9,7 @@ Com o pacote **ggplot2** e a função **ggplot**é possivel criar gráficos a pa
 ```{r}
 
 library(gsheet)
-df4 <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1aID5Dh6PlBVCKzU1j7k-WA6zuWQWE2NhtWEgdJtt5iA/edit#gid=921203844")
+df4 <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit?gid=983033137#gid=983033137")
 
 library(ggplot2)
 library(ggthemes)

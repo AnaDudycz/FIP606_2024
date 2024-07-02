@@ -1,0 +1,14 @@
+{
+  "hash": "6a867c4b71d8657e5593345d5cc9006e",
+  "result": {
+    "markdown": "---\ntitle: \"Formas de carregar planilhas para dentro do R\"\n---\n\n\n## Abrindo conjunto de dados a partir de uma planilha excel\n\nPrimeiramente é necessário adicionar a planilha com os dados, dentro da pasta com o projeto de trabalho. Em seguida instalar e carregar o pacote **readxl**. Para corregar a planilha é necessário usar a função **read_excel**() e inserir o nome completo do arquivo incluindo o .xlsx, entre aspas. Se houver mais de uma planilha dentro do arquivo excel é necessário indicar qual a planilha deseja-se adicionar, deve-se adicionar o argumento sheet = número da ordem da planilha.\n\n\n::: {.cell hash='Aula2_cache/html/unnamed-chunk-1_5ec8501d60440a76bb8a9e8bb76f7ea2'}\n\n```{.r .cell-code}\n##install.packages(\"readxl\")\nlibrary(readxl)\n\ndf2 <- read_excel(\"dados-diversos.xlsx\")\ndf21 <- read_excel(\"dados-diversos.xlsx\", sheet = 2)\n```\n:::\n\n\n## Abrindo conjunto de dados a partir de um arquivo de texto (csv)\n\nO processo é o mesmo do arquivo xlsx, basta adicionar o aquivo no formato csv na pasta do projeto. O pacote a ser usado é o **tidyverse** e a função **read.csv()**.\n\n\n::: {.cell hash='Aula2_cache/html/unnamed-chunk-2_73b82c61efb558570eeb269c6407c8d5'}\n\n```{.r .cell-code}\nlibrary(tidyverse)\ndf3 <- read.csv(\"dados-diversos.csv\")\n```\n:::\n\n\n## Abrindo conjunto de dados a partir de uma planilha google\n\nCom o pacote **gsheet** e a função **gsheet2tbl** é possivel carregar uma planilha google apenas com o link desta.Também é possível fazer o carregamento com o pacote **googlesheets4** e a função **read_sheet**.\n\n\n::: {.cell hash='Aula2_cache/html/unnamed-chunk-3_ca1fcb4d1599c7d77f826d59292a3c20'}\n\n```{.r .cell-code}\nlibrary(gsheet)\ndf4 <- gsheet2tbl(\"https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit?gid=983033137#gid=983033137\")\n```\n:::",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
