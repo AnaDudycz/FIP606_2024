@@ -1,20 +1,63 @@
 project:
   type: website
   output-dir: docs
+  
+execute: 
+  cache: true
+  freeze: auto
+  warning: false
 
 website:
-  title: "ProjetoFIP606"
+  title: "FIP606"
   navbar:
+    pinned: true
+    search: true
     left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
+      - text: Introdução ao R
+        menu: 
+         - href: Aula1.qmd
+           text: R markdown e data frame
+         - href: Aula2.qmd
+           text: Carregando planilhas para dentro do R
+      - text: Construção de gráficos em R
+        menu: 
+         - href: Aula3.qmd
+           text: Gráficos com ggplot
+         - href: Aula4.qmd
+           text: Outros pacotes e funções na construção de gráficos
+      - text: Análise estatística em R
+        menu: 
+         - href: Aula5.qmd
+           text: Teste T
+         - href: Aula6.qmd
+           text: ANOVA com um fator
+         - href: Aula7.qmd
+           text: Transformação dos dados
+         - href: Aula8.qmd
+           text: ANOVA fatorial
+         - href: Aula9.qmd
+           text: ANOVA com DBC
+         - href: Aula10.qmd
+           text: ANOVA com parcela subdividida
+         - href: Aula11.qmd
+           text: Regressão linear
+         - href: Aula12.qmd
+           text: Análise de correlação
+         - href: Aula13.qmd
+           text: Regressão não-linear
+      - text: Mapas em R
+        href: Aula14.qmd
+
+
+  page-footer: 
+    center: "Copyright 2024, Ana Rita Dudycz"
 
 format:
   html:
-    theme: cosmo
+    theme: 
+      light: sandstone
+      dark: darkly
     css: styles.css
     toc: true
 
 editor: visual
-

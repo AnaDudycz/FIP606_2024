@@ -1,0 +1,224 @@
+---
+title: "Regressão linear"
+format: html
+editor: visual
+---
+
+Para dados quantitativos, a análise de regressão costuma ser mais adequada do que a análise de variância. A regressão permite modelar e prever a relação entre uma variável dependente e uma ou mais variáveis independentes.
+
+## Regressão linear simples
+
+Na regressão linear simples determina-se uma linha reta que melhor represente essa relação, permitindo prever valores da variável dependente a partir dos valores da variável independente.
+
+## Carregando a planilha
+
+```{r}
+library(gsheet)
+estande <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=401662555")
+```
+
+## Visualização
+
+O geom_jitter() forma o gráfico de dispersão. Visualização da média e os intervalos de confiança dos dados.
+
+```{r}
+library(ggplot2)
+m1 <- estande |>
+  ggplot(aes(trat, nplants))+
+         geom_jitter(width = 0.1, alpha = 0.2)+
+         #facet_wrap(~ trat)+
+         stat_summary(fun.data = 
+                 "mean_cl_boot", size= 0.5, color=
+                 "blue")
+m1
+```
+
+## Analisando cada experimento isoladamente
+
+A regressão linear precisa definir um modelo que melhor se ajuste a curva ou linha de resposta. Portanto, deve-se fazer a análise para cada experimento ou analisar em grupos (modelos mistos).
+
+A função geom_smooth(se = F, method = lm) permite adicionar uma linha de regressão linear sem intervalo de confiança.
+
+**Experimento 1**
+
+R² mostra a relação entre a reta e os pontos que estão sendo observados (relação entre váriavel dependente e independente). O R² varia de 0 a 1.
+
+Quanto mais próximo de 1 o valor do R², maior é a proporção da variabilidade na variável dependente que pode ser explicada pelo modelo de regressão. R² mais próximo de 0 indica que o modelo explica uma menor proporção da variabilidade na variável dependente.
+
+```{r}
+library(dplyr)
+exp1 <- estande |> 
+  filter(exp == 1)
+
+exp1 |>
+  ggplot(aes(trat, nplants))+
+  geom_point()+
+  ylim(0,100)+
+  geom_smooth(se = F, method = lm)
+
+lm1 <- lm(nplants ~trat,
+          data = exp1)
+summary(lm1)
+
+```
+
+**Experimento 2**
+
+```{r}
+
+exp2 <- estande |> 
+  filter(exp == 2)
+
+exp2 |> 
+  ggplot(aes(trat, nplants))+
+  geom_point()+
+  ylim(0,100)+
+  geom_smooth(method= "lm", 
+              se=FALSE, 
+              formula = y ~poly(x,2), color="black")+
+  geom_smooth(method = "lm",
+              se = FALSE)
+
+# modelo linear
+
+exp2$trat2 <- exp2$trat^2 
+  
+# primeira ordem
+lm2 <- lm(nplants ~ trat, 
+          data = exp2)
+# segunda ordem ou quadrático
+lm3 <- lm(nplants ~ trat + trat2 , 
+          data = exp2)
+
+summary(lm2)
+summary(lm3)
+AIC(lm2)
+AIC(lm3)
+
+
+```
+
+**Experimento 3**
+
+```{r}
+exp3 <- estande |>
+  filter(exp==3)
+
+exp3 |>
+  ggplot(aes(trat, nplants))+
+  geom_point()+
+  ylim(0,100)+
+  geom_smooth(se = F, method = lm)
+exp3
+
+#modelo linear
+lm3 <- lm(nplants ~trat,
+          data = exp3)
+summary(lm3)
+
+```
+
+## Modelo GLM
+
+O Modelo Linear Generalizado (GLM) representa uma alternativa ao modelo linear convencional, sendo uma extensão que oferece flexibilidade para lidar com diversos tipos de variáveis resposta(categóricas ou contínuas). o GLM também permite modelar relações não-lineares entre a variável resposta e as variáveis explicativas.
+
+```{r}
+glm1 <- glm(nplants ~ trat, family = "gaussian", data = exp1)
+
+summary(glm1)
+
+
+glm1b <- glm(nplants ~trat, family = "poisson",
+             data = exp1)
+summary(glm1b)
+
+AIC(glm1b)
+
+
+
+glm2 <- glm(nplants ~ trat, family = "gaussian", data = exp1)
+
+summary(glm2)
+
+
+glm2b <- glm(nplants ~trat, family = "poisson",
+             data = exp2)
+summary(glm2b)
+
+AIC(glm2b)
+
+
+
+glm3 <- glm(nplants ~ trat + (trat| exp), family = "gaussian", data = exp1)
+
+summary(glm3)
+AIC(glm3)
+
+
+glm3b <- glm(nplants ~trat + (trat| exp), family = "poisson",
+             data = exp3)
+summary(glm3b)
+
+AIC(glm3b)
+```
+
+## Modelo misto
+
+Modelo que permite que as observações sejam divididas em grupos ou subgrupos.
+
+```{r}
+library(remotes)
+##remotes::install_github("emdelponte/r4pde", force = TRUE)
+
+library(r4pde)
+wr <- WhiteMoldSoybean
+
+
+wr |> 
+  ggplot(aes(inc, yld, group = factor(study)))+
+  geom_point()+
+  facet_wrap(~ study)+
+  geom_smooth(method = "lm", se = F)+
+  theme_minimal()
+
+mofo1 <- lm(yld ~inc,
+            data = wr)
+summary(mofo1)
+
+```
+
+```{r}
+library(broom)
+mofo2 <- wr |>
+  group_by(study)|>
+  do(tidy(lm(.$yld~.$inc), conf.int=TRUE))
+mofo2
+
+
+df <- mofo2 |> filter(term == ".$inc")
+mean(df$estimate)
+
+fit_all <- wr%>%
+  group_by(study) |> 
+  do(broom::tidy(lm(.$yld ~ .$inc), conf.int=TRUE))
+fit_all
+
+p3 <- fit_all |> 
+  filter(term == "(Intercept)") |> 
+  ggplot(aes(x = estimate))+
+  geom_histogram(bins = 8, color = "white", fill = "gray50")+
+  theme_r4pde()+
+  labs(x = "Intercept", y = "Frequency")
+
+p4 <- fit_all |> 
+  filter(term == ".$inc") |> 
+  ggplot(aes(x = estimate))+
+  geom_histogram(bins = 8, color = "white", fill = "gray50")+
+  theme_r4pde()+
+  labs(x = "Slope", y = "Frequency")
+
+
+library(patchwork)
+p3 | p4
+
+```

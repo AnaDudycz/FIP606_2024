@@ -1,0 +1,55 @@
+---
+title: "Regressão não-linear"
+format: html
+editor: visual
+---
+
+A regressão não-linear é usada quando a relação entre as variáveis independentes e dependentes não pode ser modelada por uma função linear.
+
+O pacote drc permite ajustar modelos de regressão dose-resposta e realizar análises estatísticas, ou seja, permite ajustar curvas de dose-resposta dos dados. Esse pacote também fornece funções para calcular estimativas de EC50 (qual valor de X reduziu em 50% o valor de Y).
+
+Outro pacote que permite calcular o valor de EC50 é o ec50estimator.
+
+```{r}
+library(gsheet)
+library(ggplot2)
+library(tidyverse)
+
+pyra <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=465348652")
+
+pyra2 <- pyra |> 
+  group_by(code, state, dose) |> 
+  summarise(mean_germination = mean(germination)) 
+
+pyra2|> 
+  ggplot(aes(dose, mean_germination))+
+  geom_point()+
+  facet_wrap(~code)
+
+library(drc)
+
+isolado165 <- pyra2 |> 
+  filter(code == "186")
+
+drc1 <- drm(mean_germination ~ dose, data = isolado165,
+            fct = W1.3())
+AIC(drc1)
+plot(drc1)
+ED(drc1, 50, interval = "delta")
+summary(drc1)
+
+library(ec50estimator)
+df_ec50 <- estimate_EC50(mean_germination ~ dose,
+                         data = pyra2,
+                         isolate_col = "code",
+                         interval = "delta",
+                         fct = drc::LL.3())
+
+df_ec50 |> 
+  ggplot(aes(reorder(ID, Estimate), Estimate))+
+  geom_point()+
+  geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.1)+
+  coord_flip()        
+                         
+
+```

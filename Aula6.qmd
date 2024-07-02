@@ -1,0 +1,135 @@
+---
+title: "Anova com um fator"
+---
+
+## Três tratamentos ou mais
+
+```{r}
+library(gsheet)
+micelial <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=959387827")
+```
+
+```{r}
+library(ggplot2)
+micelial |>
+  ggplot(aes(especie, tcm))+
+  geom_jitter()
+  
+```
+
+A função anova() permite a observação da variabilidade em cada grupo.
+
+O bartlett.test() é um teste estatístico utilizado para verificar se múltiplas amostras independentes possuem variâncias homogêneas.
+
+```{r}
+m1 <- lm(tcm ~ especie -1, data = micelial)
+
+anova(m1)
+
+summary(m1)
+
+shapiro.test(m1$residuals)
+
+bartlett.test(tcm ~especie, data = micelial)
+
+library(emmeans)
+medias1 <- emmeans(m1, ~ especie)
+
+library(multcomp)
+library(multcompView)
+cld(medias1)
+
+library(DHARMa)
+plot(simulateResiduals(m1))
+
+library(performance)
+check_normality(m1)
+check_heteroscedasticity(m1)
+check_model(m1)
+
+```
+
+Usa-se a função count() para fazer a contagem do número de repetições (n), contagem dos insetos mortos devido a condição inseticida. Os dados apresentam apenas um fator, portanto faz-se uma anova unifatorial.
+
+```{r}
+library (ggplot2)
+
+theme_set(theme_bw())
+
+inseticida <- InsectSprays
+library(tidyverse)
+inseticida |>
+  count(spray)
+
+```
+
+## Visualização dos dados
+
+```{r}
+inseticida |>
+  ggplot(aes(spray, count))+
+  geom_boxplot()
+
+```
+
+Pode-se observar pelo gráfico boxplot gerado, que o eixo y mostra a contagem do número de insetos mortos, que há variabilidade, o spray F apresenta maior variância entre o grupo e o spray E menor variância. Também, pode-se observar outliers nos grupos C e D.
+
+```{r}
+m1 <- lm(count~spray,
+         data = inseticida)
+summary(m1)
+
+anova(m1)
+
+library(emmeans)
+m1_medias <- emmeans(m1, ~ spray)
+plot(m1_medias)
+library(multcomp)
+cld(m1_medias)
+pwpm(m1_medias)
+pwpp(m1_medias)
+pairs(m1_medias)
+
+m1$residuals
+hist(m1$residuals)
+
+qqnorm(m1$residuals)
+qqline(m1$residuals)
+
+shapiro.test(m1$residuals)
+
+bartlett.test(count ~spray,
+              data = inseticida)
+
+library(performance)
+check_normality(m1)
+check_heteroscedasticity(m1)
+
+library(DHARMa)
+plot(simulateResiduals(m1))
+
+```
+
+A função lm() que significa linear model, é usado para modelar dados em uma relação linear entre a variavel dependente (resposta) e independente (tratamento).
+
+"\~" significa em função de.
+
+A função summary ajuda na visualização dos dados. Observar previamente o erro-padrão, graus de liberdade, estatistica de T, e valor P. A comparação foi em relação ao tratamento A.
+
+A função anova() apresenta o valor de F que é o teste de análise de variância, vai determinar a variabilidade entre os grupos (se o valor calculado for maior que o tabelado, rejeita-se a hipótese nula de que as médias são iguais(P\<0,05)).
+
+A função emmeans() pode ser utilizada para vizualizar as médias e comparar este valor em cada tratamento. Dentro do pacote multicomp, há a função cld que permite visualizar os tratamentos agrupados de acordo com um teste estatistico (Tukey) no exemplo há 2 grupos formados (C, E e D) e (A, B e F), portanto há diferença entre os tratamentos, como pode-se observar na Anova.
+
+A função pwpm() mostra a comparação entre as médias dos tratamentos pelo teste de tukey. Triângulo superior mostra o p-valor. A diagonal mostra a média e o triângulo inferior mostra a diferença dos tratamentos em relação a média. A função pairs() também pode ser usada para a visualização dos valores de T e p- valor.
+
+A função pwpp() mostra a visualização do teste de Tukey em relação aos tratamentos.
+
+O valor dos resíduos (erro) pode ser visualizado utilizando \$ (seleciona uma coluna no conjunto de dados). No exemplo, m1 é o conjunto e residuals é o que se deseja selecionar. Pode-se utilizar a função hist() para visualização a distribuiçõao dos residuos e ver se a mesma se aproxima da distribuição normal.
+
+As funções qqnorm(m1\$residuals) e qqline() juntas mostram um gráfico com os valores da distribuição dos resíduos em circulos e a reta dos residuos esperados. Essas funções plotam os resíduos simulados do modelo, o que pode ser útil para avaliar a adequação do modelo aos dados.
+
+A função shapiro.test mostra se a distribuição dos dados é normal (Se o valor estiver abaixo de 0,05 a distribuição não é considerada normal). A função check_normality() também pode ser usada para ver a normalidade dos dados.
+
+A função bartlett.test() mostra se as variâncias são ou não homogêneas (valor abaixo de 0,05 não é considerado homogênea). A função check_heteroscedasticity() também mostra a homogeneidade das variâncias.
+
+Como a distribuição do conjunto dos dados não foram normais e as variâncias não foram homogêneas, pode se utilizar alternativas para corrigir a distribuição e homogeneidade dos dados -> Transformação.

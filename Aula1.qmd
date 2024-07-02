@@ -1,0 +1,60 @@
+---
+title: "Introdução ao R"
+---
+
+## Aprendendo como inserir texto ou códigos no R
+
+No programa R podemos inserir anotações e formatar o documento como um documento de texto. Para colocar uma palavra em negrito adiciona-se dois asteriscos antes e após a **palavra (\*\* \*\*)**, e um anterisco antes e após a *palavra (\* \*)*, para colocar uma palavra em itálico. O tamanho da fonte pode ser regulada pela quantidade de #.
+
+## R markdown
+
+Formato que permite trabalhar com chunks separados e fazer o uso de anotações entre os mesmos. Pode-se inserir anotações úteis na análise do projeto. Um chunk é a área onde os códigos são inseridos e é possível rodar as análises. Para adicionar um chunk pode-se clicar em Ctrl+Alt+I.
+
+```{r}
+
+x <- 10
+y <- x * 10 
+z <- x * y
+x <- 10
+
+```
+
+## Data.Frame
+
+A função data.frame pode ser usada para organizar os dados trabalhados em uma tabela.
+
+```{r}
+
+df <- cars
+cars
+df$dist
+df$dist2 <- c(1:50)
+
+library(tidyverse)
+
+df |> 
+  mutate(dist3 = dist2+1) |> 
+  select(4)
+
+```
+
+## Instalando pacotes
+
+Há diferentes formas de instalar pacotes. No source pode-se escrever o código Install.packages("nome do pacote"). Para utilizar o pacote é necessário carregar o pacote com a função library(nome do pacote)
+
+```{r}
+
+install.packages("tidyverse")
+library(tidyverse)
+
+```
+
+## Utilizando o pacote ec50estimator
+
+Com o pacote **ec50estimator** pode-se estimar a dose efetiva a partir de um conjunto de dados. Pode -se observar um exemplo chamado multi_isolate dentro do pacote, em que há um conjunto de dados relacionando o crescimento micelial a partir de diferentes doses de fungicidas.
+
+```{r}
+##install.packages("ec50estimator")
+library (ec50estimator)
+df1 <- multi_isolate
+```

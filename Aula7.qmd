@@ -1,0 +1,144 @@
+---
+title: "Transformação dos dados"
+---
+
+## Alternativa 1 - Transformação
+
+Exemplo: fazer a raiz quadrada de todos os valores para melhorar a normalidade com a função mutate() e adicionando sqrt a count.
+
+```{r}
+library (ggplot2)
+
+theme_set(theme_bw())
+
+inseticida <- InsectSprays
+library(tidyverse)
+inseticida |>
+  count(spray)
+
+```
+
+```{r}
+
+library(dplyr)
+inseticida <- inseticida |>
+  mutate(count2 = sqrt(count))
+
+inseticida |>
+  ggplot(aes(spray, count2))+
+  geom_boxplot()
+
+```
+
+```{r}
+m2 <- lm(count2 ~spray,
+         data = inseticida)
+summary(m2)
+
+anova(m2)
+
+library(emmeans)
+m2_medias <- emmeans( m2, ~ spray)
+plot(m2_medias)
+library(multcomp)
+cld(m2_medias)
+pwpm(m2_medias)
+pwpp(m2_medias)
+pairs(m2_medias)
+
+m2$residuals
+hist(m2$residuals)
+
+qqnorm(m2$residuals)
+qqline(m2$residuals)
+
+shapiro.test(m2$residuals)
+
+bartlett.test(count2 ~spray,
+              data = inseticida)
+
+library(performance)
+check_normality(m2)
+check_heteroscedasticity(m2)
+
+library(DHARMa)
+plot(simulateResiduals(m2))
+
+#transformação Box-Cox
+
+library(MASS)
+b <- boxcox(lm(inseticida$count+0.1 ~1))
+lambda <- b$x[which.max(b$y)]
+lambda <- 0.5
+
+inseticida$count3 <- (inseticida$count ^ lambda - 1)/ lambda
+inseticida$count3
+
+```
+
+Com os dados transformados o teste de Shapiro-wilk mostra que a distribuição pode ser considerada normal.
+
+Os residuaos ficaram mais próximo ao esperado.
+
+No teste de Barlett o p valor deu 58%, significa que tem-se 58% de chance de encontrar o valor determinado. Como o valor é maior que 0,05 as variâncias são consideradas homogêneas.
+
+teste darma mostra se os tratamentos estão dentro da variância esperada e os agrupamentos estão de acordo com a saída da anova.
+
+De acordo com a anova pelo menos uma média difere das demais.
+
+Utilizando o pacote MASS - lambda valor de x em q y é o valor máximo (lambda 0.5 é igual a raiz quadrada).
+
+## Alternativa 2 teste não paramétrico
+
+Nesta alternativa pode-se trabalhar com a saida original sem transformação. Usa-se a função kruskal() quando são 3 grupos ou mais.
+
+```{r}
+
+library(agricolae)
+kruskal.test(count~spray,
+             data = inseticida)
+
+m3 <- kruskal(inseticida$count,
+        inseticida$spray,
+        group = TRUE)
+m3
+```
+
+Na hipótese nula - Ho: médias iguais, H1: rejeita a hipotese nula que as medias são iguais.
+
+Pelo agrupamento m3, apresenta o resultado do teste de fisher (as letrinhas), cálculo da média dos tratamentose e o ranking de ordenamento do menor para o maior. Pode-se ver nos resultados, 3 grupos - a, b e c. Resultados que batem com o boxplot gerado anteriormente.
+
+pode-se observar que o modelo não-paramétrico apresentou o resultado igual ao paramétrico transformado.
+
+## Alternativa 3 - GLMs
+
+O modelo 4 não assume a distribuição normal. Portanto, usa-se um modelo diferente: modelo linear generalizado.
+
+```{r}
+m4 <- glm(count ~spray,
+          family = poisson,
+          data = inseticida)
+m4
+
+summary(m4)
+anova(m4)
+
+library(car)
+Anova(m4)
+plot(simulateResiduals(m4))
+
+m4_medias <- emmeans(m4, ~spray,
+                     type = "response")
+m4_medias
+
+cld(m4_medias)
+
+```
+
+Isso ajusta um modelo de regressão Poisson onde a variável dependente é count e a variável independente é spray, usando os dados contidos no dataframe inseticida.
+
+A função anova() realiza uma análise de variância do modelo, que é útil para determinar a significância global do modelo de regressão Poisson.
+
+Como resultados, observa-se diferença estatística e as variâncias são homogêneas (diferente do original).
+
+Função emmeans() - calcula o log, response=dados originais (14, 50, 95% das vezes dentro do intervalo).

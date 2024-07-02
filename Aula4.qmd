@@ -1,0 +1,170 @@
+---
+title: "Outros pacotes e funções na construção de gráficos"
+---
+
+## Usando datapasta de dados a partir de uma tabela google
+
+O vetor 'comp' que contém 20 valores numéricos representando a concentração do composto em diferentes experimentos. O objeto data.table em R armazena os dados experimentais sobre a concentração de um composto (comp) em diferentes tratamentos (trat) e repetições (rep).
+
+```{r}
+comp <- (c(9, 12.5, 10, 8, 13.2, 11, 10.8, 9.5, 10.8, 10.4, 13.72, 15.91, 15.7, 14.2, 15.9, 16.54, 18, 14.4, 16.41, 16)
+)
+
+data.table::data.table(
+        trat = c("Mg2","Mg2","Mg2","Mg2","Mg2","Mg2",
+                 "Mg2","Mg2","Mg2","Mg2","control","control","control",
+                 "control","control","control","control","control","control",
+                 "control"),
+         rep = c(1L,2L,3L,4L,5L,6L,7L,8L,9L,10L,1L,
+                 2L,3L,4L,5L,6L,7L,8L,9L,10L),
+        comp = c(9,12.5,10,8,13.2,11,10.8,9.5,10.8,
+                 10.4,13.72,15.91,15.7,14.2,15.9,16.54,18,14.4,16.41,
+                 16)
+)
+```
+
+## Dados a partir da web
+
+A função tribble() do pacote tibble também pode ser usada para organizar os dados em uma tabela.
+
+```{r}
+tibble::tribble(
+  ~`1`,          ~Brazil, ~`4,303`,
+    2L,     "Mozambique",      43L,
+    3L,       "Portugal",      33L,
+    4L,  "United States",      23L,
+    5L,         "Angola",      19L,
+    6L,          "Spain",      16L,
+    7L,      "(not set)",      12L,
+    8L,       "Colombia",       8L,
+    9L,        "Germany",       5L,
+   10L,        "Hungary",       5L,
+   11L, "United Kingdom",       5L,
+   12L,    "Netherlands",       4L,
+   13L,        "Ecuador",       3L,
+   14L,         "France",       3L,
+   15L,          "Chile",       2L,
+   16L,       "Paraguay",       2L,
+   17L,           "Peru",       2L,
+   18L,      "Argentina",       1L,
+   19L,        "Austria",       1L,
+   20L,        "Bolivia",       1L,
+   21L,     "Cape Verde",       1L,
+   22L,          "China",       1L,
+   23L,          "Egypt",       1L,
+   24L,        "Finland",       1L,
+   25L,          "India",       1L,
+   26L,          "Italy",       1L,
+   27L,       "Malaysia",       1L,
+   28L,       "Pakistan",       1L,
+   29L,         "Poland",       1L,
+   30L,      "Singapore",       1L,
+   31L,    "Timor-Leste",       1L,
+   32L,        "Uruguay",       1L
+  )
+
+```
+
+O pacote tiyverse pode ser usado para a remodelagem dos dados. A função pivot_longer() permite passar os dados do formato largo para o formato longo. A função annotate do pacote ggplot2 em R é usada para adicionar anotações personalizadas aos gráficos, como textos para destacar ou explicar partes específicas de um gráfico.
+
+```{r}
+library(tidyverse)
+pepper <- 
+  tribble(
+   ~t,  ~`1`,  ~`2`,  ~`3`,
+   0,  0.08, 0.001, 0.001,
+   7,  0.13,  0.01, 0.001,
+  14,  0.78,  0.09,  0.01,
+  21,  0.92,  0.25,  0.05,
+  28,  0.99,   0.8,  0.18,
+  35, 0.995,  0.98,  0.34,
+  42, 0.999,  0.99,  0.48,
+  49, 0.999, 0.999,  0.74
+  )
+
+pepper |> 
+  pivot_longer(2:4,
+               names_to = "epidemic",
+               values_to = "inc") |>
+  ggplot(aes(t, inc, color = epidemic)) +
+  geom_point() +
+  geom_line() +
+  annotate(geom = "text",
+           x = 12,
+           y = 0.75,
+           label ="1")+
+ annotate(geom = "text",
+           x = 25,
+           y = 0.75,
+           label ="2")+
+   annotate(geom = "text",
+           x = 47,
+           y = 0.75,
+           label ="3")+
+  theme(legend.position = "none")
+
+```
+
+## Tabela de contingência
+
+Uma tabela de contingência é uma forma de resumir e visualizar a distribuição conjunta de duas ou mais variáveis categóricas. Ela mostra como as frequências ou contagens são distribuídas entre as diferentes categorias de cada uma das variáveis, permitindo analisar relações e associações entre elas.
+
+o conjunto de dados cr que foi lido do arquivo CSV e usar o pacote janitor para criar uma tabela de contingência e ggplot2 para criar gráficos.
+
+criou-se uma tabela de contingência para as variáveis cultivar e farm_management usando tabyl.
+
+```{r}
+library(ggthemes)
+cr <- read_csv("https://raw.githubusercontent.com/emdelponte/paper-coffee-rust-Ethiopia/master/data/survey_clean.csv")
+
+cr |>
+  count(farm_management, cultivar) |>
+  ggplot(aes(cultivar, n, fill = farm_management,
+             label = n)) +
+  geom_col(position = "dodge2")+
+  scale_fill_colorblind()+
+  theme_bw()+
+  theme(strip.text.x=element_blank(),
+        legend.position = "top")+
+  geom_text(position = position_dodge(width = 0.9))+
+  facet_wrap(~cultivar, scales = "free_x")
+
+library(janitor)
+
+cr |>
+  tabyl(cultivar, farm_management)
+
+```
+
+## geom_errorbar
+
+O geom_errorbar() é uma função do pacote ggplot2 que permite adicionar barras de erro a um gráfico. Essas barras de erro são frequentemente usadas para representar a variabilidade ou incerteza associada às medições feitas em um conjunto de dados.
+
+```{r}
+library(gsheet)
+mg <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=983033137")
+
+mg |>
+  group_by(trat) |>
+  summarise(mean_comp = mean(comp)) |>
+  ggplot(aes(trat,mean_comp))+
+  geom_col(fill = "steelblue", width =0.5)
+geom_errorbar(aes(ymin = mean_comp - sd_comp,
+                  ymax = mean_comp + sd_comp),
+              width = 0.1)
+mg |>
+  group_by(trat) |>
+  summarise(
+    mean_comp = mean(comp),
+    sd_comp = sd(comp)) |>
+  ggplot(aes(x = trat, y = mean_comp)) +
+  geom_point(size = 3) +
+  ylim(5, 20) +
+  geom_errorbar(aes(ymin = mean_comp - sd_comp, ymax = mean_comp + sd_comp), width = 0.2) +
+  annotate(geom = "text", x = 1, y = 17.5, label = "*")
+
+mg |>
+  ggplot(aes(trat,comp))+
+  geom_jitter(width =0.1)
+  
+```

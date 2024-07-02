@@ -1,11 +1,28 @@
 ---
-title: "ProjetoFIP606"
+about: 
+  template: jolla
+  id: about-block
+  image: "imag.jpg"
+  image-shape: round
+  links:
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/ana-rita-dudycz-32277b23a
+    - icon: github
+      text: Githube
+      href: https://github.com/AnaDudycz
+    - icon: envelope
+      text: Email
+      href: "mailto:anaritadudycz@gmail.com"
 ---
 
-This is a Quarto website.
+::: {#about-block}
+:::
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+# Olá, seja bem-vindo(a) ao meu website!
 
-```{r}
-1 + 1
-```
+Me chamo Ana Rita Dudycz, sou engenheira agrônoma pela [Universidade Estadual do Centro-Oeste]( https://www3.unicentro.br/cedeteg/) (UNICENTRO) e mestranda em fitopatologia na [Universidade Federal de Viçosa](https://www.ufv.br/campus-vicosa/) (UFV).
+
+Aqui você vai encontrar o material com anotações da disciplina análise e visualização de dados em fitopatologia, ofertada pelo [Programa de Pós-Graduação em Fitopatologia](https://www.dfp.ufv.br/pos/) da UFV.
+
+Aproveite o conteúdo! Qualquer dúvida pode entrar em contato pelo meu e-mail.

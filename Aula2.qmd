@@ -1,0 +1,38 @@
+---
+title: "Formas de carregar planilhas para dentro do R"
+---
+
+## Abrindo conjunto de dados a partir de uma planilha excel
+
+Primeiramente é necessário adicionar a planilha com os dados, dentro da pasta com o projeto de trabalho. Em seguida instalar e carregar o pacote **readxl**. Para corregar a planilha é necessário usar a função **read_excel**() e inserir o nome completo do arquivo incluindo o .xlsx, entre aspas. Se houver mais de uma planilha dentro do arquivo excel é necessário indicar qual a planilha deseja-se adicionar, deve-se adicionar o argumento sheet = número da ordem da planilha.
+
+```{r}
+##install.packages("readxl")
+library(readxl)
+
+df2 <- read_excel("dados-diversos.xlsx")
+df21 <- read_excel("dados-diversos.xlsx", sheet = 2)
+```
+
+## Abrindo conjunto de dados a partir de um arquivo de texto (csv)
+
+O processo é o mesmo do arquivo xlsx, basta adicionar o aquivo no formato csv na pasta do projeto. O pacote a ser usado é o **tidyverse** e a função **read.csv()**.
+
+```{r}
+library(tidyverse)
+df3 <- read.csv("dados-diversos.csv")
+```
+
+## Abrindo conjunto de dados a partir de uma planilha google
+
+Com o pacote **gsheet** e a função **gsheet2tbl** é possivel carregar uma planilha google apenas com o link desta.Também é possível fazer o carregamento com o pacote **googlesheets4** e a função **read_sheet**.
+
+```{r}
+library(gsheet)
+df4 <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1aID5Dh6PlBVCKzU1j7k-WA6zuWQWE2NhtWEgdJtt5iA/edit#gid=921203844")
+
+
+library (googlesheets4)
+df5 <- read_sheet("https://docs.google.com/spreadsheets/d/1aID5Dh6PlBVCKzU1j7k-WA6zuWQWE2NhtWEgdJtt5iA/edit?usp=sharing")
+
+```

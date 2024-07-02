@@ -1,0 +1,167 @@
+---
+title: "Gráficos com ggplot"
+---
+
+## Constução de gráficos
+
+Com o pacote **ggplot2** e a função **ggplot**é possivel criar gráficos a partir da planilha carregada anteriormente. Com este pacote é possível escolher o tipo de gráfico como o geom_boxplot no exemplo abaixo e personalizar da maneira desejada, com comandos e argumentos necessários, pode-se ajusta a cor, distâncias e tamanho das linhas e barras, adicionar legenda e formatar os eixos. Para salvar o gráfico gerado a função **ggsave** pode ser utilizada.
+
+```{r}
+
+library(gsheet)
+df4 <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1aID5Dh6PlBVCKzU1j7k-WA6zuWQWE2NhtWEgdJtt5iA/edit#gid=921203844")
+
+library(ggplot2)
+library(ggthemes)
+g1 <- df4 |> 
+  ggplot(aes(x = trat, y = comp)) +
+  geom_boxplot(outlier.colour = NA,
+               fill = "green")+
+  geom_jitter(width = 0.05,
+              color = 'black',
+              shape = 2,
+              size = 3)+
+  theme_clean()+
+  labs (x = "tratamento",
+       y = "comprimento (mm)",
+       title = "Meu primeiro ggplot",
+       caption = "Fonte: Dados diversos")
+g1
+  
+#ylim(0,20)+
+  scale_y_continuous(limits = c(5,20),
+                     n.breaks =10)
+  
+  ggsave("plot1.png", bg = "white")
+                     
+
+```
+
+## Importando os dados com o pacote tidyverse
+
+```{r}
+
+library(tidyverse)
+cr <- read_csv("https://raw.githubusercontent.com/emdelponte/paper-coffee-rust-Ethiopia/master/data/survey_clean.csv")
+
+glimpse(cr)
+```
+
+## Trabalhando os dados
+
+Para visualizar os dados do conjunto chamado **cr**, os dados foram agrupados com a função group_by(), posteriormente Calculada a média com o comando mean(), os resultados visualizados com ggplot.
+
+```{r}
+
+summary(cr$inc)
+
+cr |>
+  group_by(cultivar) |>
+    summarize(inc_mean = mean(inc),
+sd_mean = sd(inc))
+
+cr |>
+  ggplot(aes(x=inc))+
+  geom_histogram()+
+  facet_grid(region~cultivar)
+```
+
+## Usando as funções para sumarizar
+
+A função summarize () é utilizada para criar novas variáveis a partir do conjunto de dados já agrupados.
+
+```{r}
+cr |>
+ group_by(region) |>
+    summarize(sev_med = median(sev2),
+              sev_mean = mean(sev2),
+              sev_sd = sd(sev2))
+
+
+cr |>
+  ggplot(aes(inc,sev2))+
+  geom_point()
+```
+
+## Visualizando os dados
+
+```{r}
+library(ggthemes)
+cr |>
+  ggplot(aes(x =sev2, fill = region))+
+  geom_histogram(color = "white")+
+  facet_wrap(region ~ cultivar, ncol = 6)+
+  scale_fill_manual(values = c("black", "brown"))+
+  theme_minimal(base_size = 14)+
+  theme(legend.position = "bottom")+
+  labs(y = "Frequency",
+       x = "Severity (%)", fill= "Region")
+#ggsave("crl.png", bg = "white")
+```
+
+## Criando subconjuntos 
+
+O pacote **dplyr** possui funções que ajudam na manipulação dos dados e facilitam a visualização, como a função select() que seleciona as coluna de um dataframe e a função filter() que permite-se fazer a filtragem das linhas do conjunto.
+
+```{r}
+# filtra Oromia
+cr_oromia <- cr |>
+  select(farm, region, cultivar, sev2) |>
+  filter(region == "Oromia")
+
+# filtra SNNPR
+cr_pr <- cr|>
+  select(farm, region, cultivar, sev2) |>
+  filter(region == "SNNPR")
+
+cr_pr
+```
+
+## Visualizando os subconjuntos
+
+```{r}
+p1 <- cr_oromia |>
+  ggplot(aes(cultivar, sev2,
+             fill = cultivar))+
+  geom_boxplot()+
+  theme_few()+
+  scale_fill_few()+
+  labs(x = "",
+       y = "Severity (%)")+
+    coord_flip()
+
+p2 <- cr_pr |>
+  ggplot(aes(cultivar, sev2,
+             fill = cultivar))+
+  geom_boxplot()+
+  theme_few()+
+  scale_fill_few()+
+  labs(x = "",
+       y = "Severity (%)")+
+    coord_flip()
+
+p1
+
+p2
+
+library(patchwork)
+
+p1 + p2 +
+  plot_layout(guides = 'collect',
+  axes = 'collect')+
+  plot_annotation(title = "Coffe rust in Ethiopia",
+                  caption = "Source: Dudycz (2024)")
+  plot_annotation(tag_levels = 'A')
+
+ggsave("patch1.png", width = 6,
+       height = 4)
+
+p3 <- cr_oromia |>
+  ggplot(aes(x = sev2))+
+  geom_histogram()
+
+p1 + inset_element(p3, left = 0.6, bottom = 0.6, right = 1, top = 1)
+
+p1/ (p2 + p1)
+
+```

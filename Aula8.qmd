@@ -1,0 +1,47 @@
+---
+title: "Anova fatorial"
+---
+
+A Anova fatorial é uma extensão da análise de variância que permite investigar o efeito de dois ou mais fatores categóricos e suas interações em uma variável dependente contínua.
+
+```{r}
+library(gsheet)
+
+li <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=2023059672")
+
+
+```
+
+```{r}
+library(ggplot2)
+li |>
+  ggplot(aes(factor(dose), severity, color = factor(dose)))+
+  geom_jitter(width = 0.1)+
+  facet_wrap(~treat)
+```
+
+## Modelo fatorial(two-way anova)
+
+Fatorial testa a interação entre os tratamentos.
+
+```{r}
+mf <- lm(severity ~treat*factor(dose),
+         data = li)
+mf
+anova(mf)
+
+library(DHARMa)
+plot(simulateResiduals(mf))
+
+library(emmeans)
+mf_medias <- emmeans(mf, ~ dose | treat)
+mf_medias
+
+library(multcomp)
+cld(mf_medias)
+
+shapiro.test(mf$residuals)
+
+```
+
+O exemplo mostra se é significativo o efeito da dose no tratamento (estimar as médias de um dentro do outro).

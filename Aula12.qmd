@@ -1,0 +1,70 @@
+---
+title: "Análise de correlação"
+format: html
+editor: visual
+---
+
+A correlação é a associação entre duas variáveis respostas diferentes(força e direção de associação entre as duas).Pode haver uma relação de causa e efeito, exemplo: o aumento de uma pode causar a redução de outra. Isso mostra que as variáveis estão positivamente correlacionadas. Também podem estar positivamente relacionadas, quando as duas variáveis aumentam.
+
+As relações que nao tem causa e efeito, significa que uma variável não interfere na outra.
+
+O p-valor baixo vai indicar que indicar uma correlação maior entre as variáveis e o R² quanto de x que interfere no Y.
+
+```{r}
+library(gsheet)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+imgs <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=373270992")
+
+```
+
+```{r}
+library(ggplot2)
+library(tidyr)
+library(MASS)
+library(dplyr)
+
+imgs |>
+  pivot_longer(3:5, names_to = "method",
+               values_to = "value") |>
+  ggplot(aes(method, value))+
+  geom_boxplot()
+
+imgs|>
+  ggplot(aes(Assess, ImageJ))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+imgs2 <- imgs %>% dplyr::select(3:5)
+
+library(AgroR)
+corgraph(imgs2)
+
+cor.test(imgs$Assess, imgs$LeafDoctor)
+cor(imgs$Assess, imgs$LeafDoctor)
+
+library(corrplot)
+cor_imgs2 <- cor(imgs2)
+corrplot(cor_imgs2, method = 'number', type = "upper", diag = FALSE)
+
+```
+
+No gráfico a cor azul indica que a correlação é mais forte e vermelho baixa correlação.
+
+A medida mais frequente de correlação é o **coeficiente de correlação de Pearson**, cujos valores variam de -1 a +1. Valores próximos de +1 indicam uma correlação positiva forte, enquanto valores próximos de -1 indicam uma correlação negativa forte. Valores próximos de zero sugerem uma correlação fraca ou inexistente.
+
+```{r}
+library(AgroR)
+
+campo <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=866852711")
+
+campo2 <- campo |>
+ dplyr::select(DFC, FER, PROD)
+corgraph(campo2)
+
+campo |>
+  ggplot(aes(DFC, PROD))+
+  geom_point()
+
+```

@@ -1,0 +1,82 @@
+---
+title: "ANOVA com parcela subdividida"
+---
+
+A ANOVA para parcelas subdivididas é uma técnica estatística usada em experimentos onde existem duas ou mais fontes de variabilidade que estão hierarquicamente estruturadas. Pode-se ter diferentes tratamentos aplicados a parcelas principais e subparcelas dentro dessas parcelas principais recebendo diferentes tratamentos adicionais.
+
+## Carregando os dados
+
+```{r}
+library(gsheet)
+milho <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=1345524759")
+```
+
+## Visualização da variável Index
+
+```{r}
+library(tidyverse)
+library (ggplot2)
+
+milho |>
+  ggplot(aes(method, index))+
+  geom_jitter(width=0.1, alpha = 0.2)+
+  facet_wrap(~hybrid)+
+  stat_summary(fun.data = 
+                 "mean_cl_boot", size=0.5, color=
+                 "blue")
+  
+
+```
+
+## Anova para parcela subdividida
+
+```{r}
+library(dplyr)
+library(lme4)
+library(car)
+
+milho <- milho |>
+  mutate(block = as.factor(block))
+
+mix2 <- lmer(sqrt(index) ~ hybrid*method + block +
+               (1|block/hybrid), data = milho)
+Anova(mix2)
+
+
+
+library(performance)
+check_normality(mix2)
+check_heteroscedasticity(mix2)
+
+library(DHARMa)
+plot(simulateResiduals(mix2))
+qqnorm(residuals(mix2))
+qqline(residuals(mix2))
+hist(residuals(mix2))
+
+library(emmeans)
+medias_milho <- emmeans(mix2,
+                        ~hybrid | method,
+                        type = "response")
+medias_milho2 <- emmeans(mix2,
+                        ~method | hybrid,
+                         type = "response")
+
+library (multcomp)
+cld(medias_milho, Letters = LETTERS)
+
+
+```
+
+
+De acordo com o quado da anova pode-se observar que há interação entre hibrido e o método utilizado, ou seja, de acordo com essa interação o valor de index muda. Caso nao desse significativo poderia-se analisar o p-valor em isolado (tratamneto, bloco, etc.)
+
+Também pode-se observar que teve diferença entre o método Pin e Silk no hibrido 4, o método teve efeito. Houve variabilidade (a observação pode ser feita em cada método). Obs.: letras maiusculas comparam na coluna, minuscula na linha (% de significancia pelo teste de tukey).
+
+```{r}
+mix3 <- lmer(sqrt(yield) ~ hybrid*method + block +
+               (1|block/hybrid), data = milho)
+Anova(mix3)
+check_normality(mix3)
+check_heteroscedasticity(mix3)
+```
